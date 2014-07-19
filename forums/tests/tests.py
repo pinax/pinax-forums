@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from agora.models import Forum, ForumCategory
+from forums.models import Forum, ForumCategory
 
 
 class ForumCategoryTests(TestCase):

@@ -1,7 +1,7 @@
 from django import template
 from django.core.urlresolvers import reverse
 
-from agora.models import ThreadSubscription
+from forums.models import ThreadSubscription
 
 
 register = template.Library()

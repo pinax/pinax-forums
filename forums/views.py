@@ -7,8 +7,8 @@ from django.contrib import messages
 
 from account.decorators import login_required
 
-from agora.forms import ThreadForm, ReplyForm
-from agora.models import (
+from forums.forms import ThreadForm, ReplyForm
+from forums.models import (
     Forum,
     ForumCategory,
     ForumReply,
@@ -32,7 +32,7 @@ def forums(request):
     most_active_threads = ForumThread.objects.order_by("-reply_count")
     most_viewed_threads = ForumThread.objects.order_by("-view_count")
 
-    return render_to_response("agora/forums.html", {
+    return render_to_response("forums/forums.html", {
         "categories": categories,
         "most_active_forums": most_active_forums,
         "most_viewed_forums": most_viewed_forums,
@@ -49,7 +49,7 @@ def forum_category(request, category_id):
     category = get_object_or_404(ForumCategory, id=category_id)
     forums = category.forums.order_by("title")
 
-    return render_to_response("agora/category.html", {
+    return render_to_response("forums/category.html", {
         "category": category,
         "forums": forums,
     }, context_instance=RequestContext(request))
@@ -61,11 +61,11 @@ def forum(request, forum_id):
     threads = forum.threads.order_by("-sticky", "-last_modified")
 
     can_create_thread = all([
-        request.user.has_perm("agora.add_forumthread", obj=forum),
+        request.user.has_perm("forums.add_forumthread", obj=forum),
         not forum.closed,
     ])
 
-    return render_to_response("agora/forum.html", {
+    return render_to_response("forums/forum.html", {
         "forum": forum,
         "threads": threads,
         "can_create_thread": can_create_thread,
@@ -77,7 +77,7 @@ def forum_thread(request, thread_id):
     thread = get_object_or_404(qs, id=thread_id)
 
     can_create_reply = all([
-        request.user.has_perm("agora.add_forumreply", obj=thread),
+        request.user.has_perm("forums.add_forumreply", obj=thread),
         not thread.closed,
         not thread.forum.closed,
     ])
@@ -99,7 +99,7 @@ def forum_thread(request, thread_id):
                 # all users are automatically subscribed to onsite
                 thread.subscribe(reply.author, "onsite")
 
-                return HttpResponseRedirect(reverse("agora_thread", args=[thread.id]))
+                return HttpResponseRedirect(reverse("forums_thread", args=[thread.id]))
         else:
             reply_form = ReplyForm()
     else:
@@ -109,7 +109,7 @@ def forum_thread(request, thread_id):
     posts = ForumThread.objects.posts(thread, reverse=(order_type == "desc"))
     thread.inc_views()
 
-    return render_to_response("agora/thread.html", {
+    return render_to_response("forums/thread.html", {
         "thread": thread,
         "posts": posts,
         "order_type": order_type,
@@ -127,13 +127,13 @@ def post_create(request, forum_id):
 
     if forum.closed:
         messages.error(request, "This forum is closed.")
-        return HttpResponseRedirect(reverse("agora_forum", args=[forum.id]))
+        return HttpResponseRedirect(reverse("forums_forum", args=[forum.id]))
 
-    can_create_thread = request.user.has_perm("agora.add_forumthread", obj=forum)
+    can_create_thread = request.user.has_perm("forums.add_forumthread", obj=forum)
 
     if not can_create_thread:
         messages.error(request, "You do not have permission to create a thread.")
-        return HttpResponseRedirect(reverse("agora_forum", args=[forum.id]))
+        return HttpResponseRedirect(reverse("forums_forum", args=[forum.id]))
 
     if request.method == "POST":
         form = ThreadForm(request.POST)
@@ -151,11 +151,11 @@ def post_create(request, forum_id):
             # all users are automatically subscribed to onsite
             thread.subscribe(thread.author, "onsite")
 
-            return HttpResponseRedirect(reverse("agora_thread", args=[thread.id]))
+            return HttpResponseRedirect(reverse("forums_thread", args=[thread.id]))
     else:
         form = ThreadForm()
 
-    return render_to_response("agora/post_create.html", {
+    return render_to_response("forums/post_create.html", {
         "form": form,
         "member": member,
         "forum": forum
@@ -170,13 +170,13 @@ def reply_create(request, thread_id):
 
     if thread.closed:
         messages.error(request, "This thread is closed.")
-        return HttpResponseRedirect(reverse("agora_thread", args=[thread.id]))
+        return HttpResponseRedirect(reverse("forums_thread", args=[thread.id]))
 
-    can_create_reply = request.user.has_perm("agora.add_forumreply", obj=thread)
+    can_create_reply = request.user.has_perm("forums.add_forumreply", obj=thread)
 
     if not can_create_reply:
         messages.error(request, "You do not have permission to reply to this thread.")
-        return HttpResponseRedirect(reverse("agora_thread", args=[thread.id]))
+        return HttpResponseRedirect(reverse("forums_thread", args=[thread.id]))
 
     if request.method == "POST":
         form = ReplyForm(request.POST)
@@ -194,7 +194,7 @@ def reply_create(request, thread_id):
             # all users are automatically subscribed to onsite
             thread.subscribe(reply.author, "onsite")
 
-            return HttpResponseRedirect(reverse("agora_thread", args=[thread_id]))
+            return HttpResponseRedirect(reverse("forums_thread", args=[thread_id]))
     else:
         quote = request.GET.get("quote")  # thread id to quote
         initial = {}
@@ -207,7 +207,7 @@ def reply_create(request, thread_id):
 
     first_reply = not ForumReply.objects.filter(thread=thread, author=request.user).exists()
 
-    return render_to_response("agora/reply_create.html", {
+    return render_to_response("forums/reply_create.html", {
         "form": form,
         "member": member,
         "thread": thread,
@@ -237,11 +237,11 @@ def post_edit(request, post_kind, post_id):
         form = form_class(request.POST, instance=post, no_subscribe=True)
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse("agora_thread", args=[thread_id]))
+            return HttpResponseRedirect(reverse("forums_thread", args=[thread_id]))
     else:
         form = form_class(instance=post, no_subscribe=True)
 
-    return render_to_response("agora/post_edit.html", {
+    return render_to_response("forums/post_edit.html", {
         "post": post,
         "form": form,
     }, context_instance=RequestContext(request))
@@ -254,10 +254,10 @@ def subscribe(request, thread_id):
 
     if request.method == "POST":
         thread.subscribe(user, "email")
-        return HttpResponseRedirect(reverse("agora_thread", args=[thread_id]))
+        return HttpResponseRedirect(reverse("forums_thread", args=[thread_id]))
     else:
         ctx = RequestContext(request, {"thread": thread})
-        return render_to_response("agora/subscribe.html", ctx)
+        return render_to_response("forums/subscribe.html", ctx)
 
 
 @login_required
@@ -267,10 +267,10 @@ def unsubscribe(request, thread_id):
 
     if request.method == "POST":
         thread.unsubscribe(user, "email")
-        return HttpResponseRedirect(reverse("agora_thread", args=[thread_id]))
+        return HttpResponseRedirect(reverse("forums_thread", args=[thread_id]))
     else:
         ctx = RequestContext(request, {"thread": thread})
-        return render_to_response("agora/unsubscribe.html", ctx)
+        return render_to_response("forums/unsubscribe.html", ctx)
 
 
 @login_required
@@ -286,4 +286,4 @@ def thread_updates(request):
         "subscriptions": subscriptions,
     }
     ctx = RequestContext(request, ctx)
-    return render_to_response("agora/thread_updates.html", ctx)
+    return render_to_response("forums/thread_updates.html", ctx)

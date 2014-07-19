@@ -1,31 +1,31 @@
-Agora
-=====
+pinax-forums
+============
 
-.. image:: https://img.shields.io/travis/eldarion/agora.svg
-    :target: https://travis-ci.org/eldarion/agora
+.. image:: https://img.shields.io/travis/pinax/forums.svg
+    :target: https://travis-ci.org/pinax/forums
 
-.. image:: https://img.shields.io/coveralls/eldarion/agora.svg
-    :target: https://coveralls.io/r/eldarion/agora
+.. image:: https://img.shields.io/coveralls/pinax/forums.svg
+    :target: https://coveralls.io/r/pinax/forums
 
-.. image:: https://img.shields.io/pypi/dm/agora.svg
-    :target:  https://pypi.python.org/pypi/agora/
+.. image:: https://img.shields.io/pypi/dm/pinax-forums.svg
+    :target:  https://pypi.python.org/pypi/pinax-forums/
 
-.. image:: https://img.shields.io/pypi/v/agora.svg
-    :target:  https://pypi.python.org/pypi/agora/
+.. image:: https://img.shields.io/pypi/v/pinax-forums.svg
+    :target:  https://pypi.python.org/pypi/pinax-forums/
 
-.. image:: https://img.shields.io/badge/license-BSD-blue.svg
-    :target:  https://pypi.python.org/pypi/agora/
+.. image:: https://img.shields.io/badge/license-MIT-blue.svg
+    :target:  https://pypi.python.org/pypi/pinax-forums/
 
 
-Agora is a Pinax app for forums. It is focused on core forum
+pinax-forums is a Pinax app for forums. It is focused on core forum
 functionality and hence is expected to be combined with other Pinax apps
 for broader features.
 
-See `Pinax Forums`_ for a full Django project incorporating numerous
+See `pinax-project-forums`_ for a full Django project incorporating numerous
 apps with the goal of providing an out of the box forums solution.
 
-Agora was originally built by Eldarion, incorporating code and ideas
-from various client projects. The clients were kind enough to allow
+pinax-forums was originally built by Eldarion and called `agora`. It incorporate
+code and ideas from various client projects. The clients were kind enough to allow
 Eldarion to open source the app and contribute it to Pinax.
 
-.. _Pinax Forums: https://github.com/pinax/pinax-project-forums
+.. _pinax-project-forums: https://github.com/pinax/pinax-project-forums

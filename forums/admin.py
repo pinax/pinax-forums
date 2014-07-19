@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from agora import models
+from forums import models
 
 
 class ForumThreadAdmin(admin.ModelAdmin):

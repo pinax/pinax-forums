@@ -1,4 +1,4 @@
 [run]
-source = agora
-omit = agora/tests/*
+source = forums
+omit = forums/tests/*
 branch = 1

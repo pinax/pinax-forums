@@ -1,6 +1,6 @@
 from django import forms
 
-from agora.models import ForumThread, ForumReply
+from forums.models import ForumThread, ForumReply
 
 
 class PostForm(object):

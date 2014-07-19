@@ -8,8 +8,8 @@ from django.utils.html import conditional_escape
 
 from django.contrib.auth.models import User
 
-from agora.conf import settings
-from agora.managers import ForumThreadManager
+from forums.conf import settings
+from forums.managers import ForumThreadManager
 
 
 # this is the glue to the activity events framework, provided as a no-op here
@@ -32,7 +32,7 @@ class ForumCategory(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("agora_category", args=[self.pk])
+        return reverse("forums_category", args=[self.pk])
 
     @property
     def forums(self):
@@ -243,13 +243,13 @@ class ForumPost(models.Model):
         abstract = True
 
     def save(self, **kwargs):
-        self.content_html = conditional_escape(settings.AGORA_PARSER(self.content))
+        self.content_html = conditional_escape(settings.FORUMS_PARSER(self.content))
         super(ForumPost, self).save(**kwargs)
 
     # allow editing for short period after posting
     def editable(self, user):
         if user == self.author:
-            if timezone.now() < self.created + datetime.timedelta(**settings.AGORA_EDIT_TIMEOUT):
+            if timezone.now() < self.created + datetime.timedelta(**settings.FORUMS_EDIT_TIMEOUT):
                 return True
         return False
 
