@@ -1,11 +1,11 @@
 pinax-forums
 ============
 
-.. image:: https://img.shields.io/travis/pinax/forums.svg
-    :target: https://travis-ci.org/pinax/forums
+.. image:: https://img.shields.io/travis/pinax/pinax-forums.svg
+    :target: https://travis-ci.org/pinax/pinax-forums
 
-.. image:: https://img.shields.io/coveralls/pinax/forums.svg
-    :target: https://coveralls.io/r/pinax/forums
+.. image:: https://img.shields.io/coveralls/pinax/pinax-forums.svg
+    :target: https://coveralls.io/r/pinax/pinax-forums
 
 .. image:: https://img.shields.io/pypi/dm/pinax-forums.svg
     :target:  https://pypi.python.org/pypi/pinax-forums/
