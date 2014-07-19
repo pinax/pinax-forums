@@ -48,9 +48,9 @@ class SubscribeUrlNode(template.Node):
         self.user = template.Variable(user)
         self.thread = template.Variable(thread)
         self.varname = varname
-        self.viewname = "agora_unsubscribe"
+        self.viewname = "forums_unsubscribe"
         if subscribe:
-            self.viewname = "agora_subscribe"
+            self.viewname = "forums_subscribe"
 
     def render(self, context):
         user = self.user.resolve(context)

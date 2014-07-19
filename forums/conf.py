@@ -21,7 +21,7 @@ def load_path_attr(path):
 
 class ForumsAppConf(AppConf):
 
-    PARSER = "agora.callbacks.default_text"
+    PARSER = "forums.callbacks.default_text"
     EDIT_TIMEOUT = dict(minutes=3)
 
     def configure_parser(self, value):
