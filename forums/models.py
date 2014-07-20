@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import datetime
 import json
 
@@ -5,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 from django.utils.html import conditional_escape
+from django.utils.encoding import python_2_unicode_compatible
 
 from django.contrib.auth.models import User
 
@@ -17,6 +20,7 @@ def issue_update(kind, **kwargs):
     pass
 
 
+@python_2_unicode_compatible
 class ForumCategory(models.Model):
 
     title = models.CharField(max_length=100)
@@ -28,7 +32,7 @@ class ForumCategory(models.Model):
     class Meta:
         verbose_name_plural = "forum categories"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_absolute_url(self):
@@ -39,6 +43,7 @@ class ForumCategory(models.Model):
         return self.forum_set.order_by("title")
 
 
+@python_2_unicode_compatible
 class Forum(models.Model):
 
     title = models.CharField(max_length=100)
@@ -109,7 +114,7 @@ class Forum(models.Model):
         if self.parent:
             self.parent.new_post(post)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def update_last_thread(self):
@@ -254,6 +259,7 @@ class ForumPost(models.Model):
         return False
 
 
+@python_2_unicode_compatible
 class ForumThread(ForumPost):
 
     # used for code that needs to know the kind of post this object is.
@@ -323,7 +329,7 @@ class ForumThread(ForumPost):
         else:
             return True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def update_last_reply(self):
