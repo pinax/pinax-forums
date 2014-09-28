@@ -122,7 +122,7 @@ def forum_thread(request, thread_id):
 @login_required
 def post_create(request, forum_id):
 
-    member = request.user.get_profile()
+    member = request.user.profile
     forum = get_object_or_404(Forum, id=forum_id)
 
     if forum.closed:
@@ -165,7 +165,7 @@ def post_create(request, forum_id):
 @login_required
 def reply_create(request, thread_id):
 
-    member = request.user.get_profile()
+    member = request.user.profile
     thread = get_object_or_404(ForumThread, id=thread_id)
 
     if thread.closed:
