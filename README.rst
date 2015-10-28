@@ -52,7 +52,7 @@ Eldarion to open source the app and contribute it to Pinax.
 Documentation
 ---------------
 
-The Pinax documentation is available at http://pinaxproject.com/pinax/.
+The pinax-forums documentation is currently under construction. If you would like to help us write documentation, please join our Pinax Project Slack channel and let us know! The Pinax documentation is available at http://pinaxproject.com/pinax/.
 
 
 Code of Conduct
