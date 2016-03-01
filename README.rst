@@ -35,14 +35,14 @@ pinax-forums
 functionality and hence is expected to be combined with other Pinax apps
 for broader features.
 
-See `pinax-project-forums`_ for a full Django project incorporating numerous
+See ``pinax-project-forums`` for a full Django project incorporating numerous
 apps with the goal of providing an out of the box forums solution.
 
 
 History
 ---------
 
-``pinax-forums`` was originally built by Eldarion and called `agora`. It incorporate
+``pinax-forums`` was originally built by Eldarion and called ``agora``. It incorporate
 code and ideas from various client projects. The clients were kind enough to allow
 Eldarion to open source the app and contribute it to Pinax.
 
@@ -52,13 +52,13 @@ Eldarion to open source the app and contribute it to Pinax.
 Documentation
 ---------------
 
-The pinax-forums documentation is currently under construction. If you would like to help us write documentation, please join our Pinax Project Slack channel and let us know! The Pinax documentation is available at http://pinaxproject.com/pinax/.
+The ``pinax-forums`` documentation is currently under construction. If you would like to help us write documentation, please join our Pinax Project Slack team and let us know! The Pinax documentation is available at http://pinaxproject.com/pinax/.
 
 
 Contribute
 ----------------
 
-See our How to Contribute (http://pinaxproject.com/pinax/how_to_contribute/) section for an overview on how contributing to Pinax works. For concrete contribution ideas, please see our Ways to Contribute/What We Need Help With (http://pinaxproject.com/pinax/ways_to_contribute/) section.
+See this blog post http://blog.pinaxproject.com/2016/02/26/recap-february-pinax-hangout/ including a video, or our How to Contribute (http://pinaxproject.com/pinax/how_to_contribute/) section for an overview on how contributing to Pinax works. For concrete contribution ideas, please see our Ways to Contribute/What We Need Help With (http://pinaxproject.com/pinax/ways_to_contribute/) section.
 
 In case of any questions, we would recommend for you to join our Pinax Slack team (http://slack.pinaxproject.com) and ping us there instead of creating an issue on GitHub. Creating issues on GitHub is of course also valid but we are usually able to help you faster if you ping us in Slack.
 
