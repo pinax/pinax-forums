@@ -1,6 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 
 from django.contrib import messages
@@ -32,7 +32,7 @@ def forums(request):
     most_active_threads = ForumThread.objects.order_by("-reply_count")
     most_viewed_threads = ForumThread.objects.order_by("-view_count")
 
-    return render_to_response("forums/forums.html", {
+    return render(request, "forums/forums.html", {
         "categories": categories,
         "most_active_forums": most_active_forums,
         "most_viewed_forums": most_viewed_forums,
@@ -41,7 +41,7 @@ def forums(request):
         "latest_threads": latest_threads,
         "most_active_threads": most_active_threads,
         "most_viewed_threads": most_viewed_threads,
-    }, context_instance=RequestContext(request))
+    })
 
 
 def forum_category(request, category_id):
@@ -49,10 +49,10 @@ def forum_category(request, category_id):
     category = get_object_or_404(ForumCategory, id=category_id)
     forums = category.forums.order_by("title")
 
-    return render_to_response("forums/category.html", {
+    return render(request, "forums/category.html", {
         "category": category,
         "forums": forums,
-    }, context_instance=RequestContext(request))
+    })
 
 
 def forum(request, forum_id):
@@ -65,11 +65,11 @@ def forum(request, forum_id):
         not forum.closed,
     ])
 
-    return render_to_response("forums/forum.html", {
+    return render(request, "forums/forum.html", {
         "forum": forum,
         "threads": threads,
         "can_create_thread": can_create_thread,
-    }, context_instance=RequestContext(request))
+    })
 
 
 def forum_thread(request, thread_id):
@@ -109,14 +109,14 @@ def forum_thread(request, thread_id):
     posts = ForumThread.objects.posts(thread, reverse=(order_type == "desc"))
     thread.inc_views()
 
-    return render_to_response("forums/thread.html", {
+    return render(request, "forums/thread.html", {
         "thread": thread,
         "posts": posts,
         "order_type": order_type,
         "subscribed": thread.subscribed(request.user, "email"),
         "reply_form": reply_form,
         "can_create_reply": can_create_reply,
-    }, context_instance=RequestContext(request))
+    })
 
 
 @login_required
@@ -155,11 +155,11 @@ def post_create(request, forum_id):
     else:
         form = ThreadForm()
 
-    return render_to_response("forums/post_create.html", {
+    return render(request, "forums/post_create.html", {
         "form": form,
         "member": member,
         "forum": forum
-    }, context_instance=RequestContext(request))
+    })
 
 
 @login_required
@@ -207,13 +207,13 @@ def reply_create(request, thread_id):
 
     first_reply = not ForumReply.objects.filter(thread=thread, author=request.user).exists()
 
-    return render_to_response("forums/reply_create.html", {
+    return render(request, "forums/reply_create.html", {
         "form": form,
         "member": member,
         "thread": thread,
         "subscribed": thread.subscribed(request.user, "email"),
         "first_reply": first_reply,
-    }, context_instance=RequestContext(request))
+    })
 
 
 @login_required
@@ -241,10 +241,10 @@ def post_edit(request, post_kind, post_id):
     else:
         form = form_class(instance=post, no_subscribe=True)
 
-    return render_to_response("forums/post_edit.html", {
+    return render(request, "forums/post_edit.html", {
         "post": post,
         "form": form,
-    }, context_instance=RequestContext(request))
+    })
 
 
 @login_required

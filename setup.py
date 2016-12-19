@@ -12,14 +12,14 @@ setup(
     url="http://github.com/pinax/pinax-forums/",
     packages=find_packages(),
     install_requires=[
-        "django-appconf>=0.6",
-        "django-user-accounts==1.0c9"
+        "django-appconf>=1.0.1",
+        "django-user-accounts==2.0.0"
     ],
     test_suite="runtests.runtests",
     tests_require=[
-        "django-appconf>=0.6",
-        "Django>=1.5",
-        "django-user-accounts==1.0c9"
+        "django-appconf>=1.0.1",
+        "Django>=1.8",
+        "django-user-accounts==2.0.0"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
