@@ -92,6 +92,8 @@ def forum_thread(request, thread_id):
                 reply.author = request.user
                 reply.save()
 
+                thread.new_reply(reply)
+
                 # subscribe the poster to the thread if requested (default value is True)
                 if reply_form.cleaned_data["subscribe"]:
                     thread.subscribe(reply.author, "email")
@@ -144,6 +146,8 @@ def post_create(request, forum_id):
             thread.author = request.user
             thread.save()
 
+            forum.new_post(thread)
+
             # subscribe the poster to the thread if requested (default value is True)
             if form.cleaned_data["subscribe"]:
                 thread.subscribe(thread.author, "email")
@@ -164,7 +168,6 @@ def post_create(request, forum_id):
 
 @login_required
 def reply_create(request, thread_id):
-
     # member = request.user.profile
     thread = get_object_or_404(ForumThread, id=thread_id)
 
@@ -186,6 +189,8 @@ def reply_create(request, thread_id):
             reply.thread = thread
             reply.author = request.user
             reply.save()
+
+            thread.new_reply(reply)
 
             # subscribe the poster to the thread if requested (default value is True)
             if form.cleaned_data["subscribe"]:
