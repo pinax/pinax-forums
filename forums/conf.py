@@ -24,6 +24,7 @@ class ForumsAppConf(AppConf):
 
     PARSER = "forums.callbacks.default_text"
     EDIT_TIMEOUT = dict(minutes=3)
+    HOOKSET = "forums.hooks.ForumsDefaultHookSet"
 
     def configure_parser(self, value):
         return load_path_attr(value)

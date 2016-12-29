@@ -8,6 +8,7 @@ from django.contrib import messages
 from account.decorators import login_required
 
 from forums.forms import ThreadForm, ReplyForm
+from .hooks import hookset
 from forums.models import (
     Forum,
     ForumCategory,
@@ -58,6 +59,10 @@ def forum_category(request, category_id):
 def forum(request, forum_id):
 
     forum = get_object_or_404(Forum, id=forum_id)
+
+    if not hookset.can_access(request, forum):
+        raise Http404()
+
     threads = forum.threads.order_by("-sticky", "-last_modified")
 
     can_create_thread = all([
@@ -75,6 +80,9 @@ def forum(request, forum_id):
 def forum_thread(request, thread_id):
     qs = ForumThread.objects.select_related("forum")
     thread = get_object_or_404(qs, id=thread_id)
+
+    if not hookset.can_access(request, thread.forum):
+        raise Http404()
 
     can_create_reply = all([
         request.user.has_perm("forums.add_forumreply", obj=thread),
@@ -127,6 +135,9 @@ def post_create(request, forum_id):
     # member = request.user.profile
     forum = get_object_or_404(Forum, id=forum_id)
 
+    if not hookset.can_access(request, forum):
+        raise Http404()
+
     if forum.closed:
         messages.error(request, "This forum is closed.")
         return HttpResponseRedirect(reverse("forums_forum", args=[forum.id]))
@@ -170,6 +181,9 @@ def post_create(request, forum_id):
 def reply_create(request, thread_id):
     # member = request.user.profile
     thread = get_object_or_404(ForumThread, id=thread_id)
+
+    if not hookset.can_access(request, thread.forum):
+        raise Http404()
 
     if thread.closed:
         messages.error(request, "This thread is closed.")
