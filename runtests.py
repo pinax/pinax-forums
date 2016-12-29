@@ -13,8 +13,8 @@ DEFAULT_SETTINGS = dict(
         "django.contrib.contenttypes",
         "django.contrib.sites",
         "account",
-        "forums",
-        "forums.tests"
+        "pinax.forums",
+        "pinax.forums.tests"
     ],
     DATABASES={
         "default": {
@@ -23,7 +23,7 @@ DEFAULT_SETTINGS = dict(
         }
     },
     SITE_ID=1,
-    ROOT_URLCONF="forums.tests.urls",
+    ROOT_URLCONF="pinax.forums.tests.urls",
     SECRET_KEY="notasecret",
 )
 
