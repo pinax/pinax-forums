@@ -22,12 +22,11 @@ def load_path_attr(path):
 
 class ForumsAppConf(AppConf):
 
-    PARSER = "forums.callbacks.default_text"
     EDIT_TIMEOUT = dict(minutes=3)
-    HOOKSET = "forums.hooks.ForumsDefaultHookSet"
-
-    def configure_parser(self, value):
-        return load_path_attr(value)
+    HOOKSET = "pinax.forums.hooks.ForumsDefaultHookSet"
 
     def configure_hookset(self, value):
         return load_path_attr(value)()
+
+    class Meta:
+        prefix = "pinax_forums"

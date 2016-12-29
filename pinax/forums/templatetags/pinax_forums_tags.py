@@ -1,7 +1,7 @@
 from django import template
 from django.core.urlresolvers import reverse
 
-from forums.models import ThreadSubscription
+from ..models import ThreadSubscription
 
 
 register = template.Library()
@@ -48,14 +48,14 @@ class SubscribeUrlNode(template.Node):
         self.user = template.Variable(user)
         self.thread = template.Variable(thread)
         self.varname = varname
-        self.viewname = "forums_unsubscribe"
+        self.url_name = "pinax_forums:unsubscribe"
         if subscribe:
-            self.viewname = "forums_subscribe"
+            self.url_name = "pinax_forums:subscribe"
 
     def render(self, context):
         user = self.user.resolve(context)
         thread = self.thread.resolve(context)
-        context[self.varname] = reverse(self.viewname, kwargs={
+        context[self.varname] = reverse(self.url_name, kwargs={
             "user_id": user.id,
             "thread_id": thread.id
         })
