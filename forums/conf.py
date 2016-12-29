@@ -28,3 +28,6 @@ class ForumsAppConf(AppConf):
 
     def configure_parser(self, value):
         return load_path_attr(value)
+
+    def configure_hookset(self, value):
+        return load_path_attr(value)()
