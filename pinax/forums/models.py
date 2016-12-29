@@ -6,13 +6,13 @@ import json
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
-from django.utils.html import conditional_escape
 from django.utils.encoding import python_2_unicode_compatible
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
-from forums.conf import settings
-from forums.managers import ForumThreadManager
+from .conf import settings
+from .managers import ForumThreadManager
+from .hooks import hookset
 
 
 # this is the glue to the activity events framework, provided as a no-op here
@@ -36,7 +36,7 @@ class ForumCategory(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse("forums_category", args=[self.pk])
+        return reverse("pinax_forums:category", args=[self.pk])
 
     @property
     def forums(self):
@@ -239,7 +239,7 @@ class Forum(models.Model):
 
 class ForumPost(models.Model):
 
-    author = models.ForeignKey(User, related_name="%(app_label)s_%(class)s_related")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="%(app_label)s_%(class)s_related")
     content = models.TextField()
     content_html = models.TextField()
     created = models.DateTimeField(default=timezone.now, editable=False)
@@ -248,13 +248,13 @@ class ForumPost(models.Model):
         abstract = True
 
     def save(self, **kwargs):
-        self.content_html = conditional_escape(settings.FORUMS_PARSER(self.content))
+        self.content_html = hookset.parse(self.content)
         super(ForumPost, self).save(**kwargs)
 
     # allow editing for short period after posting
     def editable(self, user):
         if user == self.author:
-            if timezone.now() < self.created + datetime.timedelta(**settings.FORUMS_EDIT_TIMEOUT):
+            if timezone.now() < self.created + datetime.timedelta(**settings.PINAX_FORUMS_EDIT_TIMEOUT):
                 return True
         return False
 
@@ -365,11 +365,12 @@ class ForumReply(ForumPost):
 
 class UserPostCount(models.Model):
 
-    user = models.ForeignKey(User, related_name="post_count")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="post_count")
     count = models.IntegerField(default=0)
 
     @classmethod
     def calculate(cls):
+        User = get_user_model()
         for user in User.objects.all():
             thread_count = ForumThread.objects.filter(author=user).count()
             reply_count = ForumReply.objects.filter(author=user).count()
@@ -388,7 +389,7 @@ class UserPostCount(models.Model):
 class ThreadSubscription(models.Model):
 
     thread = models.ForeignKey(ForumThread, related_name="subscriptions")
-    user = models.ForeignKey(User, related_name="forum_subscriptions")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="forum_subscriptions")
     kind = models.CharField(max_length=15)
 
     class Meta:
@@ -396,6 +397,7 @@ class ThreadSubscription(models.Model):
 
     @classmethod
     def setup_onsite(cls):
+        User = get_user_model()
         for user in User.objects.all():
             threads = ForumThread.objects.filter(author=user).values_list("pk", flat=True)
             threads_by_replies = ForumReply.objects.filter(

@@ -1,6 +1,7 @@
+import importlib
+
 from django.conf import settings  # noqa
 from django.core.exceptions import ImproperlyConfigured
-from django.utils import importlib
 
 from appconf import AppConf
 
@@ -21,8 +22,11 @@ def load_path_attr(path):
 
 class ForumsAppConf(AppConf):
 
-    PARSER = "forums.callbacks.default_text"
     EDIT_TIMEOUT = dict(minutes=3)
+    HOOKSET = "pinax.forums.hooks.ForumsDefaultHookSet"
 
-    def configure_parser(self, value):
-        return load_path_attr(value)
+    def configure_hookset(self, value):
+        return load_path_attr(value)()
+
+    class Meta:
+        prefix = "pinax_forums"

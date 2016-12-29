@@ -22,7 +22,7 @@ class ForumThreadPostQuerySet(models.query.QuerySet):
 class ForumThreadManager(models.Manager):
 
     def posts(self, thread, reverse=False):
-        from forums.models import ForumReply  # @@@ this seems like a code smell
+        from .models import ForumReply  # @@@ this seems like a code smell
         queryset = ForumThreadPostQuerySet(ForumReply, using=self._db)
         queryset._posts_manager_params = {
             "reverse": reverse,

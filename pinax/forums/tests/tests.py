@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from forums.models import Forum, ForumCategory
+from pinax.forums.models import Forum, ForumCategory
 
 
 class ForumCategoryTests(TestCase):
