@@ -1,18 +1,17 @@
 from django.conf.urls import url
 
 from .views import (
-    forums,
-    forum_category,
     forum,
+    forum_category,
     forum_thread,
+    forums,
     post_create,
-    reply_create,
     post_edit,
+    reply_create,
     subscribe,
-    unsubscribe,
     thread_updates,
+    unsubscribe,
 )
-
 
 # Expected that these are mounted under namespace "pinax_forums"
 urlpatterns = [

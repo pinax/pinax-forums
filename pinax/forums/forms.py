@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import ForumThread, ForumReply
+from .models import ForumReply, ForumThread
 
 
 class PostForm(object):
