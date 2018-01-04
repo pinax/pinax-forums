@@ -13,6 +13,8 @@ from .views import (
     unsubscribe,
 )
 
+app_name = "pinax_forums"
+
 # Expected that these are mounted under namespace "pinax_forums"
 urlpatterns = [
     url(r"^$", forums, name="forums"),
