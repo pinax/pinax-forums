@@ -1,12 +1,11 @@
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render
-
 from django.contrib import messages
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 
 from account.decorators import login_required
 
-from .forms import ThreadForm, ReplyForm
+from .forms import ReplyForm, ThreadForm
 from .hooks import hookset
 from .models import (
     Forum,
@@ -14,7 +13,7 @@ from .models import (
     ForumReply,
     ForumThread,
     ThreadSubscription,
-    UserPostCount
+    UserPostCount,
 )
 
 

@@ -1,4 +1,4 @@
-from django.utils.html import urlize, linebreaks, escape, conditional_escape
+from django.utils.html import conditional_escape, escape, linebreaks, urlize
 from django.utils.safestring import mark_safe
 
 from .conf import settings
