@@ -118,11 +118,18 @@ Place template files in a `pinax/forums/` subfolder in your project template sea
 
 ## Change Log
 
+### 1.0.1
+
+* Add django>=1.11 to installation requirements
+* Update CI configuration
+* Delete unused files
+* Update documentation
+* Fix license target link
+
 ### 1.0.0
 
 * Add Django 2.0 compatibility testing
 * Drop Django 1.8, 1.9, 1.10, and Python 3.3 support
-* Add django>=1.11 to installation requirements
 * Move documentation into README and standardize layout
 * Convert CI and coverage to CircleCi and CodeCov
 * Add PyPi-compatible long description
