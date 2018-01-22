@@ -19,6 +19,10 @@
 * [About Pinax](#about-pinax)
 * [Overview](#overview)
   * [Supported Django and Python versions](#supported-django-and-python-versions)
+* [Documentation](#documentation)
+  * [Installation](#installation)
+  * [Settings](#settings)
+  * [Templates](#templates)  
 * [Change Log](#change-log)
 * [History](#history)
 * [Contribute](#contribute)
@@ -47,12 +51,78 @@ Django \ Python | 2.7 | 3.4 | 3.5 | 3.6
 2.0  |     |  *  |  *  |  *
 
 
+## Documentation
+
+### Installation
+
+To install pinax-forums:
+
+```shell
+$ pip install pinax-forums
+```
+
+Add `pinax.forums` to your `INSTALLED_APPS` setting:
+
+```python
+INSTALLED_APPS = [
+    # other apps
+    "pinax.forums",
+]
+```
+
+Add `pinax.forums.urls` to your project urlpatterns:
+
+```python
+urlpatterns = [
+    # other urls
+    url(r"^forums/", include("pinax.forums.urls", namespace="pinax_forums")),
+]
+```
+
+
+### Settings
+
+#### PINAX_FORUMS_EDIT_TIMEOUT
+
+Allow changes for up to `PINAX_FORUMS_EDIT_TIMEOUT` seconds after creating a post.
+Once this period has expired the post is no longer editable.
+
+#### PINAX_FORUMS_HOOKSET
+
+
+### Templates
+
+The templates referenced by pinax-forums code must be supplied by the user.
+Place template files in a `pinax/forums/` subfolder in your project template search path.
+
+#### `category.html`
+
+#### `forum.html`
+
+#### `forums.html`
+
+#### `post_create.html`
+
+#### `post_edit.html`
+
+#### `reply_create.html`
+
+#### `subscribe.html`
+
+#### `thread.html`
+
+#### `thread_updates.html`
+
+#### `unsubscribe.html`
+
+
 ## Change Log
 
 ### 1.0.0
 
 * Add Django 2.0 compatibility testing
 * Drop Django 1.8, 1.9, 1.10, and Python 3.3 support
+* Add django>=1.11 to installation requirements
 * Move documentation into README and standardize layout
 * Convert CI and coverage to CircleCi and CodeCov
 * Add PyPi-compatible long description

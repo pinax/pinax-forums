@@ -30,7 +30,7 @@ Pinax Forums
 .. image:: http://slack.pinaxproject.com/badge.svg
     :target: http://slack.pinaxproject.com/
 .. image:: https://img.shields.io/badge/license-MIT-blue.svg
-    :target: https://pypi.python.org/pypi/pinax-forums/
+    :target: https://opensource.org/licenses/MIT
 
 \ 
 
@@ -67,14 +67,12 @@ setup(
         "forums": []
     },
     install_requires=[
+        "django>=1.11",
         "django-appconf>=1.0.1",
         "django-user-accounts==2.0.3"
     ],
     test_suite="runtests.runtests",
     tests_require=[
-        "django-appconf>=1.0.1",
-        "Django>=1.8",
-        "django-user-accounts==2.0.3"
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
