@@ -30,10 +30,12 @@
 * [Connect with Pinax](#connect-with-pinax)
 * [License](#license)
 
+
 ## About Pinax
 
 Pinax is an open-source platform built on the Django Web Framework. It is an ecosystem of reusable
 Django apps, themes, and starter project templates. This collection can be found at http://pinaxproject.com.
+
 
 ## pinax-forums
 
@@ -79,7 +81,6 @@ urlpatterns = [
 ]
 ```
 
-
 ### Settings
 
 #### PINAX_FORUMS_EDIT_TIMEOUT
@@ -88,7 +89,6 @@ Allow changes for up to `PINAX_FORUMS_EDIT_TIMEOUT` seconds after creating a pos
 Once this period has expired the post is no longer editable.
 
 #### PINAX_FORUMS_HOOKSET
-
 
 ### Templates
 
