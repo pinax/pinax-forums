@@ -118,6 +118,10 @@ Place template files in a `pinax/forums/` subfolder in your project template sea
 
 ## Change Log
 
+### 1.0.2
+
+* Allow use with any account-management package by removing django-user-accounts dependency
+
 ### 1.0.1
 
 * Add django>=1.11 to installation requirements

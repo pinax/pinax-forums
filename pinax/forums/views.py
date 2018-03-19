@@ -3,7 +3,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
-from account.decorators import login_required
+from .compat import login_required
 
 from .forms import ReplyForm, ThreadForm
 from .hooks import hookset
