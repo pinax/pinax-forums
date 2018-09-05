@@ -296,4 +296,4 @@ def thread_updates(request):
     if request.method == "POST":
         subscriptions.filter(pk=request.POST["thread_id"]).delete()
 
-    return render("pinax/forums/thread_updates.html", {"subscriptions": subscriptions})
+    return render(request, "pinax/forums/thread_updates.html", {"subscriptions": subscriptions})
