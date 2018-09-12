@@ -1,5 +1,4 @@
 from django.contrib import messages
-from django.contrib.auth.models import User
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -63,11 +62,8 @@ def forum(request, forum_id):
 
     threads = forum.threads.order_by("-sticky", "-last_modified")
 
-    user_id = request.user.id
-    user = get_object_or_404(User, pk=user_id)
-
     can_create_thread = all([
-        user.has_perm("forums.add_forumthread", obj=forum),
+        request.user.is_authenticated,
         not forum.closed,
     ])
 
@@ -85,11 +81,8 @@ def forum_thread(request, thread_id):
     if not hookset.can_access(request, thread.forum):
         raise Http404()
 
-    user_id = request.user.id
-    user = get_object_or_404(User, pk=user_id)
-
     can_create_reply = all([
-        user.has_perm("forums.add_forumreply", obj=thread),
+        request.user.is_authenticated,
         not thread.closed,
         not thread.forum.closed,
     ])
@@ -146,10 +139,7 @@ def post_create(request, forum_id):
         messages.error(request, "This forum is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:forum", args=[forum.id]))
 
-    user_id = request.user.id
-    user = get_object_or_404(User, pk=user_id)
-
-    can_create_thread = user.has_perm("forums.add_forumthread", obj=forum)
+    can_create_thread = request.user.is_authenticated
 
     if not can_create_thread:
         messages.error(request, "You do not have permission to create a thread.")
@@ -196,10 +186,7 @@ def reply_create(request, thread_id):
         messages.error(request, "This thread is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
 
-    user_id = request.user.id
-    user = get_object_or_404(User, pk=user_id)
-    
-    can_create_reply = user.has_perm("forums.add_forumreply", obj=thread)
+    can_create_reply = request.user.is_authenticated
 
     if not can_create_reply:
         messages.error(request, "You do not have permission to reply to this thread.")
