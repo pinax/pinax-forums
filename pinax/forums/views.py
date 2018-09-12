@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -25,10 +26,10 @@ def forums(request):
     most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
     most_active_members = UserPostCount.objects.order_by("-count")[:5]
 
-    latest_posts = ForumReply.objects.order_by("-created")[:10]
-    latest_threads = ForumThread.objects.order_by("-last_modified")
-    most_active_threads = ForumThread.objects.order_by("-reply_count")
-    most_viewed_threads = ForumThread.objects.order_by("-view_count")
+    latest_posts = ForumReply.objects.order_by("-created")[:5]
+    latest_threads = ForumThread.objects.order_by("-last_modified")[:5]
+    most_active_threads = ForumThread.objects.order_by("-reply_count")[:5]
+    most_viewed_threads = ForumThread.objects.order_by("-view_count")[:5]
 
     return render(request, "pinax/forums/forums.html", {
         "categories": categories,
@@ -62,8 +63,11 @@ def forum(request, forum_id):
 
     threads = forum.threads.order_by("-sticky", "-last_modified")
 
+    user_id = request.user.id
+    user = get_object_or_404(User, pk=user_id)
+
     can_create_thread = all([
-        request.user.has_perm("forums.add_forumthread", obj=forum),
+        user.has_perm("forums.add_forumthread", obj=forum),
         not forum.closed,
     ])
 
@@ -81,8 +85,11 @@ def forum_thread(request, thread_id):
     if not hookset.can_access(request, thread.forum):
         raise Http404()
 
+    user_id = request.user.id
+    user = get_object_or_404(User, pk=user_id)
+
     can_create_reply = all([
-        request.user.has_perm("forums.add_forumreply", obj=thread),
+        user.has_perm("forums.add_forumreply", obj=thread),
         not thread.closed,
         not thread.forum.closed,
     ])
@@ -139,7 +146,10 @@ def post_create(request, forum_id):
         messages.error(request, "This forum is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:forum", args=[forum.id]))
 
-    can_create_thread = request.user.has_perm("forums.add_forumthread", obj=forum)
+    user_id = request.user.id
+    user = get_object_or_404(User, pk=user_id)
+
+    can_create_thread = user.has_perm("forums.add_forumthread", obj=forum)
 
     if not can_create_thread:
         messages.error(request, "You do not have permission to create a thread.")
@@ -186,7 +196,10 @@ def reply_create(request, thread_id):
         messages.error(request, "This thread is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
 
-    can_create_reply = request.user.has_perm("forums.add_forumreply", obj=thread)
+    user_id = request.user.id
+    user = get_object_or_404(User, pk=user_id)
+    
+    can_create_reply = user.has_perm("forums.add_forumreply", obj=thread)
 
     if not can_create_reply:
         messages.error(request, "You do not have permission to reply to this thread.")
