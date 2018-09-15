@@ -25,10 +25,10 @@ def forums(request):
     most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
     most_active_members = UserPostCount.objects.order_by("-count")[:5]
 
-    latest_posts = ForumReply.objects.order_by("-created")[:10]
-    latest_threads = ForumThread.objects.order_by("-last_modified")
-    most_active_threads = ForumThread.objects.order_by("-reply_count")
-    most_viewed_threads = ForumThread.objects.order_by("-view_count")
+    latest_posts = ForumReply.objects.order_by("-created")[:5]
+    latest_threads = ForumThread.objects.order_by("-last_modified")[:5]
+    most_active_threads = ForumThread.objects.order_by("-reply_count")[:5]
+    most_viewed_threads = ForumThread.objects.order_by("-view_count")[:5]
 
     return render(request, "pinax/forums/forums.html", {
         "categories": categories,
@@ -63,7 +63,7 @@ def forum(request, forum_id):
     threads = forum.threads.order_by("-sticky", "-last_modified")
 
     can_create_thread = all([
-        request.user.has_perm("forums.add_forumthread", obj=forum),
+        request.user.is_authenticated,
         not forum.closed,
     ])
 
@@ -82,7 +82,7 @@ def forum_thread(request, thread_id):
         raise Http404()
 
     can_create_reply = all([
-        request.user.has_perm("forums.add_forumreply", obj=thread),
+        request.user.is_authenticated,
         not thread.closed,
         not thread.forum.closed,
     ])
@@ -139,7 +139,7 @@ def post_create(request, forum_id):
         messages.error(request, "This forum is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:forum", args=[forum.id]))
 
-    can_create_thread = request.user.has_perm("forums.add_forumthread", obj=forum)
+    can_create_thread = request.user.is_authenticated
 
     if not can_create_thread:
         messages.error(request, "You do not have permission to create a thread.")
@@ -186,7 +186,7 @@ def reply_create(request, thread_id):
         messages.error(request, "This thread is closed.")
         return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
 
-    can_create_reply = request.user.has_perm("forums.add_forumreply", obj=thread)
+    can_create_reply = request.user.is_authenticated
 
     if not can_create_reply:
         messages.error(request, "You do not have permission to reply to this thread.")
@@ -289,11 +289,11 @@ def unsubscribe(request, thread_id):
 
 @login_required
 def thread_updates(request):
-    subscriptions = ThreadSubscription.objects.filter(user=request.user, kind="onsite")
+    subscriptions = ThreadSubscription.objects.filter(user=request.user)
     subscriptions = subscriptions.select_related("thread", "user")
     subscriptions = subscriptions.order_by("-thread__last_modified")
 
     if request.method == "POST":
         subscriptions.filter(pk=request.POST["thread_id"]).delete()
 
-    return render("pinax/forums/thread_updates.html", {"subscriptions": subscriptions})
+    return render(request, "pinax/forums/thread_updates.html", {"subscriptions": subscriptions})

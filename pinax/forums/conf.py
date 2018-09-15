@@ -22,7 +22,7 @@ def load_path_attr(path):
 
 class ForumsAppConf(AppConf):
 
-    EDIT_TIMEOUT = dict(minutes=3)
+    EDIT_TIMEOUT = dict(minutes=30)
     HOOKSET = "pinax.forums.hooks.ForumsDefaultHookSet"
 
     def configure_hookset(self, value):
