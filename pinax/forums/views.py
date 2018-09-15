@@ -289,7 +289,7 @@ def unsubscribe(request, thread_id):
 
 @login_required
 def thread_updates(request):
-    subscriptions = ThreadSubscription.objects.filter(user=request.user, kind="onsite")
+    subscriptions = ThreadSubscription.objects.filter(user=request.user)
     subscriptions = subscriptions.select_related("thread", "user")
     subscriptions = subscriptions.order_by("-thread__last_modified")
 
