@@ -78,7 +78,7 @@ def forum_thread(request, thread_id):
     qs = ForumThread.objects.select_related("forum")
     thread = get_object_or_404(qs, id=thread_id)
 
-    if not hookset.can_access(request, thread.forum):
+    if not hookset.can_access(request, thread):
         raise Http404()
 
     can_create_reply = all([
@@ -179,7 +179,7 @@ def reply_create(request, thread_id):
     # member = request.user.profile
     thread = get_object_or_404(ForumThread, id=thread_id)
 
-    if not hookset.can_access(request, thread.forum):
+    if not hookset.can_access(request, thread):
         raise Http404()
 
     if thread.closed:

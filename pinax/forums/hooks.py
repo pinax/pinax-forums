@@ -6,8 +6,10 @@ from .conf import settings
 
 class ForumsDefaultHookSet(object):
 
-    def can_access(self, request, forum):
-        "can the given request access the given forum?"
+    def can_access(self, request, forum_or_thread):
+        """
+        can the given request access the given forum?
+        """
         return True
 
     def parse(self, text):
