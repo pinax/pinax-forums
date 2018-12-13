@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.views.generic import DetailView, FormView, ListView, UpdateView
 
-from .compat import login_required
+from .compat import LoginRequiredMixin
 from .forms import ReplyForm, ThreadForm
 from .hooks import hookset
 from .models import (
@@ -16,284 +17,322 @@ from .models import (
 )
 
 
-def forums(request):
+class ForumsView(ListView):
 
-    categories = ForumCategory.objects.filter(parent__isnull=True)
-    categories = categories.order_by("title")
+    template_name = "pinax/forums/forums.html"
 
-    most_active_forums = Forum.objects.order_by("-post_count")[:5]
-    most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
-    most_active_members = UserPostCount.objects.order_by("-count")[:5]
+    def stats(self):
+        categories = ForumCategory.objects.filter(parent__isnull=True)
+        categories = categories.order_by("title")
 
-    latest_posts = ForumReply.objects.order_by("-created")[:10]
-    latest_threads = ForumThread.objects.order_by("-last_modified")
-    most_active_threads = ForumThread.objects.order_by("-reply_count")
-    most_viewed_threads = ForumThread.objects.order_by("-view_count")
+        most_active_forums = Forum.objects.order_by("-post_count")[:5]
+        most_viewed_forums = Forum.objects.order_by("-view_count")[:5]
+        most_active_members = UserPostCount.objects.order_by("-count")[:5]
 
-    return render(request, "pinax/forums/forums.html", {
-        "categories": categories,
-        "most_active_forums": most_active_forums,
-        "most_viewed_forums": most_viewed_forums,
-        "most_active_members": most_active_members,
-        "latest_posts": latest_posts,
-        "latest_threads": latest_threads,
-        "most_active_threads": most_active_threads,
-        "most_viewed_threads": most_viewed_threads,
-    })
+        latest_posts = ForumReply.objects.order_by("-created")[:10]
+        latest_threads = ForumThread.objects.order_by("-last_modified")
+        most_active_threads = ForumThread.objects.order_by("-reply_count")
+        most_viewed_threads = ForumThread.objects.order_by("-view_count")
 
+        return {
+            "categories": categories,
+            "most_active_forums": most_active_forums,
+            "most_viewed_forums": most_viewed_forums,
+            "most_active_members": most_active_members,
+            "latest_posts": latest_posts,
+            "latest_threads": latest_threads,
+            "most_active_threads": most_active_threads,
+            "most_viewed_threads": most_viewed_threads,
+        }
 
-def forum_category(request, category_id):
-
-    category = get_object_or_404(ForumCategory, id=category_id)
-    forums = category.forums.order_by("title")
-
-    return render(request, "pinax/forums/category.html", {
-        "category": category,
-        "forums": forums,
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(**self.stats())
+        return context
 
 
-def forum(request, forum_id):
+class ForumCategoryView(DetailView):
 
-    forum = get_object_or_404(Forum, id=forum_id)
+    model = ForumCategory
+    context_object_name = "category"
+    template_name = "pinax/forums/category.html"
 
-    if not hookset.can_access(request, forum):
-        raise Http404()
-
-    threads = forum.threads.order_by("-sticky", "-last_modified")
-
-    can_create_thread = all([
-        request.user.has_perm("forums.add_forumthread", obj=forum),
-        not forum.closed,
-    ])
-
-    return render(request, "pinax/forums/forum.html", {
-        "forum": forum,
-        "threads": threads,
-        "can_create_thread": can_create_thread,
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["forums"] = self.object.forums.order_by("title")
+        return context
 
 
-def forum_thread(request, thread_id):
-    qs = ForumThread.objects.select_related("forum")
-    thread = get_object_or_404(qs, id=thread_id)
+class ForumView(DetailView):
 
-    if not hookset.can_access(request, thread):
-        raise Http404()
+    model = Forum
+    context_object_name = "forum"
+    template_name = "pinax/forums/forum.html"
 
-    can_create_reply = all([
-        request.user.has_perm("forums.add_forumreply", obj=thread),
-        not thread.closed,
-        not thread.forum.closed,
-    ])
+    def can_create_thread(self):
+        return all([
+            self.request.user.has_perm("forums.add_forumthread", obj=self.object),
+            not self.object.closed,
+        ])
 
-    if can_create_reply:
-        if request.method == "POST":
-            reply_form = ReplyForm(request.POST)
+    def threads(self):
+        return self.object.threads.order_by("-sticky", "-last_modified")
 
-            if reply_form.is_valid():
-                reply = reply_form.save(commit=False)
-                reply.thread = thread
-                reply.author = request.user
-                reply.save()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["threads"] = self.threads()
+        context["can_create_thread"] = self.can_create_thread()
+        return context
 
-                thread.new_reply(reply)
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not hookset.can_access(request, self.object):
+            raise Http404()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
-                # subscribe the poster to the thread if requested (default value is True)
-                if reply_form.cleaned_data["subscribe"]:
-                    thread.subscribe(reply.author, "email")
 
-                # all users are automatically subscribed to onsite
-                thread.subscribe(reply.author, "onsite")
+class ForumThreadView(FormView, DetailView):
 
-                return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
+    form_class = ReplyForm
+    model = ForumThread
+    context_object_name = "thread"
+    template_name = "pinax/forums/thread.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("forum")
+
+    def can_create_reply(self):
+        return all([
+            self.request.user.has_perm("forums.add_forumreply", obj=self.object),
+            not self.object.closed,
+            not self.object.forum.closed,
+        ])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.can_create_reply():
+            context["reply_form"] = context["form"]
         else:
-            reply_form = ReplyForm()
-    else:
-        reply_form = None
+            context["reply_form"] = None
+        order_type = self.request.GET.get("order_type", "asc")
+        context.update({
+            "posts": ForumThread.objects.posts(self.object, reverse=(order_type == "desc")),
+            "order_type": order_type,
+            "subscribed": self.object.subscribed(self.request.user, "email"),
+            "can_create_reply": self.can_create_reply(),
+        })
+        return context
 
-    order_type = request.GET.get("order_type", "asc")
-    posts = ForumThread.objects.posts(thread, reverse=(order_type == "desc"))
-    thread.inc_views()
+    def form_valid(self, form):
+        reply = form.save(commit=False)
+        reply.thread = self.object
+        reply.author = self.request.user
+        reply.save()
 
-    return render(request, "pinax/forums/thread.html", {
-        "thread": thread,
-        "posts": posts,
-        "order_type": order_type,
-        "subscribed": thread.subscribed(request.user, "email"),
-        "reply_form": reply_form,
-        "can_create_reply": can_create_reply,
-    })
+        self.object.new_reply(reply)
 
+        # subscribe the poster to the thread if requested (default value is True)
+        if form.cleaned_data["subscribe"]:
+            self.object.subscribe(reply.author, "email")
 
-@login_required
-def post_create(request, forum_id):
+        # all users are automatically subscribed to onsite
+        self.object.subscribe(reply.author, "onsite")
 
-    # member = request.user.profile
-    forum = get_object_or_404(Forum, id=forum_id)
+        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.pk]))
 
-    if not hookset.can_access(request, forum):
-        raise Http404()
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not hookset.can_access(request, self.object):
+            raise Http404()
+        return super().dispatch(request, *args, **kwargs)
 
-    if forum.closed:
-        messages.error(request, "This forum is closed.")
-        return HttpResponseRedirect(reverse("pinax_forums:forum", args=[forum.id]))
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(object=self.object)
+        self.objects.inc_views()
+        return self.render_to_response(context)
 
-    can_create_thread = request.user.has_perm("forums.add_forumthread", obj=forum)
-
-    if not can_create_thread:
-        messages.error(request, "You do not have permission to create a thread.")
-        return HttpResponseRedirect(reverse("pinax_forums:forum", args=[forum.id]))
-
-    if request.method == "POST":
-        form = ThreadForm(request.POST)
-
-        if form.is_valid():
-            thread = form.save(commit=False)
-            thread.forum = forum
-            thread.author = request.user
-            thread.save()
-
-            forum.new_post(thread)
-
-            # subscribe the poster to the thread if requested (default value is True)
-            if form.cleaned_data["subscribe"]:
-                thread.subscribe(thread.author, "email")
-
-            # all users are automatically subscribed to onsite
-            thread.subscribe(thread.author, "onsite")
-
-            return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
-    else:
-        form = ThreadForm()
-
-    return render(request, "pinax/forums/post_create.html", {
-        "form": form,
-        # "member": member,
-        "forum": forum
-    })
+    def post(self, request, *args, **kwargs):
+        if self.can_create_reply():
+            return super().post(request, *args, **kwargs)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
 
-@login_required
-def reply_create(request, thread_id):
-    # member = request.user.profile
-    thread = get_object_or_404(ForumThread, id=thread_id)
+class PostCreateView(LoginRequiredMixin, FormView, DetailView):
 
-    if not hookset.can_access(request, thread):
-        raise Http404()
+    model = Forum
+    context_object_name = "forum"
+    form_class = ThreadForm
+    template_name = "pinax/forums/post_create.html"
 
-    if thread.closed:
-        messages.error(request, "This thread is closed.")
+    def can_create_thread(self):
+        return self.request.user.has_perm("forums.add_forumthread", obj=self.object)
+
+    def form_valid(self, form):
+        thread = form.save(commit=False)
+        thread.forum = self.object
+        thread.author = self.request.user
+        thread.save()
+
+        self.object.new_post(thread)
+
+        # subscribe the poster to the thread if requested (default value is True)
+        if form.cleaned_data["subscribe"]:
+            thread.subscribe(thread.author, "email")
+
+        # all users are automatically subscribed to onsite
+        thread.subscribe(thread.author, "onsite")
         return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
 
-    can_create_reply = request.user.has_perm("forums.add_forumreply", obj=thread)
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not hookset.can_access(request, self.object):
+            raise Http404()
+        if self.object.closed:
+            messages.error(request, "This forum is closed.")
+            return HttpResponseRedirect(reverse("pinax_forums:forum", args=[self.object.id]))
+        if not self.can_create_thread():
+            messages.error(request, "You do not have permission to create a thread.")
+            return HttpResponseRedirect(reverse("pinax_forums:forum", args=[self.object.id]))
+        return super().dispatch(request, *args, **kwargs)
 
-    if not can_create_reply:
-        messages.error(request, "You do not have permission to reply to this thread.")
-        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread.id]))
 
-    if request.method == "POST":
-        form = ReplyForm(request.POST)
+class ForumThreadReplyCreateView(LoginRequiredMixin, FormView, DetailView):
 
-        if form.is_valid():
-            reply = form.save(commit=False)
-            reply.thread = thread
-            reply.author = request.user
-            reply.save()
+    model = ForumThread
+    context_object_name = "thread"
+    template_name = "pinax/forums/reply_create.html"
+    form_class = ReplyForm
 
-            thread.new_reply(reply)
+    def can_create_reply(self):
+        return self.request.user.has_perm("forums.add_forumreply", obj=self.object)
 
-            # subscribe the poster to the thread if requested (default value is True)
-            if form.cleaned_data["subscribe"]:
-                thread.subscribe(reply.author, "email")
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not hookset.can_access(request, self.object):
+            raise Http404()
 
-            # all users are automatically subscribed to onsite
-            thread.subscribe(reply.author, "onsite")
+        if thread.closed:
+            messages.error(request, "This thread is closed.")
+            return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.id]))
 
-            return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread_id]))
-    else:
-        quote = request.GET.get("quote")  # thread id to quote
+        if not self.can_create_reply():
+            messages.error(request, "You do not have permission to reply to this thread.")
+            return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.id]))
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        reply = form.save(commit=False)
+        reply.thread = self.object
+        reply.author = self.request.user
+        reply.save()
+
+        self.object.new_reply(reply)
+
+        # subscribe the poster to the thread if requested (default value is True)
+        if form.cleaned_data["subscribe"]:
+            self.object.subscribe(reply.author, "email")
+
+        # all users are automatically subscribed to onsite
+        self.object.subscribe(reply.author, "onsite")
+
+        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.pk]))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["subscribed"] = self.object.subscribed(self.request.user, "email")
+        context["first_reply"] = not ForumReply.objects.filter(thread=self.object, author=self.request.user).exists()
+        return context
+
+    def get_initial(self):
+        quote = self.request.GET.get("quote")  # thread id to quote
         initial = {}
-
         if quote:
             quote_reply = ForumReply.objects.get(id=int(quote))
             initial["content"] = "\"%s\"" % quote_reply.content
-
-        form = ReplyForm(initial=initial)
-
-    first_reply = not ForumReply.objects.filter(thread=thread, author=request.user).exists()
-
-    return render(request, "pinax/forums/reply_create.html", {
-        "form": form,
-        # "member": member,
-        "thread": thread,
-        "subscribed": thread.subscribed(request.user, "email"),
-        "first_reply": first_reply,
-    })
+        return initial
 
 
-@login_required
-def post_edit(request, post_kind, post_id):
+class PostEditView(LoginRequiredMixin, UpdateView):
 
-    if post_kind == "thread":
-        post = get_object_or_404(ForumThread, id=post_id)
-        thread_id = post.id
-        form_class = ThreadForm
-    elif post_kind == "reply":
-        post = get_object_or_404(ForumReply, id=post_id)
-        thread_id = post.thread.id
-        form_class = ReplyForm
-    else:
-        raise Http404()
+    context_object_name = "post"
 
-    if not post.editable(request.user):
-        raise Http404()
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not self.object.editable(request.user):
+            raise Http404()
+        return super().dispatch(request, *args, **kwargs)
 
-    if request.method == "POST":
-        form = form_class(request.POST, instance=post, no_subscribe=True)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread_id]))
-    else:
-        form = form_class(instance=post, no_subscribe=True)
+    def get_success_url(self):
+        return reverse("pinax_forums:thread", args=[self.thread_id])
 
-    return render(request, "pinax/forums/post_edit.html", {
-        "post": post,
-        "form": form,
-    })
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"no_subscribe": True})
+        return kwargs
 
 
-@login_required
-def subscribe(request, thread_id):
-    user = request.user
-    thread = get_object_or_404(ForumThread, pk=thread_id)
+class ThreadEditView(PostEditView):
 
-    if request.method == "POST":
-        thread.subscribe(user, "email")
-        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread_id]))
-    else:
-        return render(request, "pinax/forums/subscribe.html", {"thread": thread})
+    model = ForumThread
+    form_class = ThreadForm
+
+    @property
+    def thread_id(self):
+        return self.object.id
 
 
-@login_required
-def unsubscribe(request, thread_id):
-    user = request.user
-    thread = get_object_or_404(ForumThread, pk=thread_id)
+class ReplyEditView(PostEditView):
 
-    if request.method == "POST":
-        thread.unsubscribe(user, "email")
-        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[thread_id]))
-    else:
-        return render(request, "pinax/forums/unsubscribe.html", {"thread": thread})
+    model = ForumReply
+    form_class = ReplyForm
+
+    @property
+    def thread_id(self):
+        return self.object.thread.id
 
 
-@login_required
-def thread_updates(request):
-    subscriptions = ThreadSubscription.objects.filter(user=request.user, kind="onsite")
-    subscriptions = subscriptions.select_related("thread", "user")
-    subscriptions = subscriptions.order_by("-thread__last_modified")
+class SubscribeView(LoginRequiredMixin, DetailView):
 
-    if request.method == "POST":
-        subscriptions.filter(pk=request.POST["thread_id"]).delete()
+    model = ForumThread
+    context_object_name = "thread"
+    template_name = "pinax/forums/subscribe.html"
 
-    return render("pinax/forums/thread_updates.html", {"subscriptions": subscriptions})
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.subscribe(request.user, "email")
+        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.id]))
+
+
+class UnsubscribeView(LoginRequiredMixin, DetailView):
+
+    model = ForumThread
+    context_object_name = "thread"
+    template_name = "pinax/forums/unsubscribe.html"
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.unsubscribe(request.user, "email")
+        return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.id]))
+
+
+class ThreadUpdatesView(LoginRequiredMixin, ListView):
+
+    model = ThreadSubscription
+    template_name = "pinax/forums/thread_updates.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user, kind="onsite")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        subscriptions = self.get_queryset().select_related("thread", "user").order_by("-thread__last_modified")
+        context["subscriptions"] = subscriptions
+        return context
+
+    def post(self, request, *args, **kwargs):
+        subscription = get_object_or_404(self.get_queryset(), pk=request.POST["thread_id"])
+        subscription.delete()
+        return self.get(request, *args, **kwargs)
