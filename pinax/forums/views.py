@@ -213,7 +213,7 @@ class ForumThreadReplyCreateView(LoginRequiredMixin, FormView, DetailView):
         if not hookset.can_access(request, self.object):
             raise Http404()
 
-        if thread.closed:
+        if self.object.closed:
             messages.error(request, "This thread is closed.")
             return HttpResponseRedirect(reverse("pinax_forums:thread", args=[self.object.id]))
 
