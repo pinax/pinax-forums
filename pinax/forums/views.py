@@ -149,7 +149,7 @@ class ForumThreadView(FormView, DetailView):
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(object=self.object)
-        self.objects.inc_views()
+        self.object.inc_views()
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
