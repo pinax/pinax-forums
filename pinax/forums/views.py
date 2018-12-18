@@ -19,6 +19,7 @@ from .models import (
 
 class ForumsView(ListView):
 
+    model = Forum
     template_name = "pinax/forums/forums.html"
 
     def stats(self):
