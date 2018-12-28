@@ -71,10 +71,7 @@ class ForumView(DetailView):
     template_name = "pinax/forums/forum.html"
 
     def can_create_thread(self):
-        return all([
-            self.request.user.has_perm("forums.add_forumthread", obj=self.object),
-            not self.object.closed,
-        ])
+        return hookset.can_create_thread(request=self.request, thread=self.object)
 
     def threads(self):
         return self.object.threads.order_by("-sticky", "-last_modified")
@@ -104,11 +101,7 @@ class ForumThreadView(FormView, DetailView):
         return super().get_queryset().select_related("forum")
 
     def can_create_reply(self):
-        return all([
-            self.request.user.has_perm("forums.add_forumreply", obj=self.object),
-            not self.object.closed,
-            not self.object.forum.closed,
-        ])
+        return hookset.can_create_reply(request=self.request, thread=self.object)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -168,7 +161,7 @@ class PostCreateView(LoginRequiredMixin, FormView, DetailView):
     template_name = "pinax/forums/post_create.html"
 
     def can_create_thread(self):
-        return self.request.user.has_perm("forums.add_forumthread", obj=self.object)
+        return hookset.can_create_thread(request=self.request, thread=self.object)
 
     def form_valid(self, form):
         thread = form.save(commit=False)
@@ -207,7 +200,7 @@ class ForumThreadReplyCreateView(LoginRequiredMixin, FormView, DetailView):
     form_class = ReplyForm
 
     def can_create_reply(self):
-        return self.request.user.has_perm("forums.add_forumreply", obj=self.object)
+        return hookset.can_create_reply(request=self.request, thread=self.object)
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
