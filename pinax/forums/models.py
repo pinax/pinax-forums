@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 
 from .conf import settings
 from .hooks import hookset
@@ -19,7 +18,6 @@ def issue_update(kind, **kwargs):
     pass
 
 
-@python_2_unicode_compatible
 class ForumCategory(models.Model):
 
     title = models.CharField(max_length=100)
@@ -42,7 +40,6 @@ class ForumCategory(models.Model):
         return self.forum_set.order_by("title")
 
 
-@python_2_unicode_compatible
 class Forum(models.Model):
 
     title = models.CharField(max_length=100)
@@ -259,7 +256,6 @@ class ForumPost(models.Model):
         return False
 
 
-@python_2_unicode_compatible
 class ForumThread(ForumPost):
 
     # used for code that needs to know the kind of post this object is.
