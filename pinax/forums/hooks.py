@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from .conf import settings
 
 
-class ForumsDefaultHookSet(object):
+class ForumsDefaultHookSet:
 
     def can_create_reply(self, request, thread):
         return all([
@@ -37,7 +37,7 @@ class ForumsDefaultHookSet(object):
         )
 
 
-class HookProxy(object):
+class HookProxy:
 
     def __getattr__(self, attr):
         return getattr(settings.PINAX_FORUMS_HOOKSET, attr)

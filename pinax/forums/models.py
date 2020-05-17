@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import datetime
 import json
 
@@ -246,7 +244,7 @@ class ForumPost(models.Model):
 
     def save(self, **kwargs):
         self.content_html = hookset.parse(self.content)
-        super(ForumPost, self).save(**kwargs)
+        super().save(**kwargs)
 
     # allow editing for short period after posting
     def editable(self, user):
