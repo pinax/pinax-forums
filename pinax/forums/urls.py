@@ -1,15 +1,15 @@
 from django.conf.urls import url
 
 from .views import (
-    ForumsView,
     ForumCategoryView,
+    ForumsView,
+    ForumThreadReplyCreateView,
     ForumThreadView,
     ForumView,
     PostCreateView,
-    ForumThreadReplyCreateView,
-    ThreadEditView,
     ReplyEditView,
     SubscribeView,
+    ThreadEditView,
     ThreadUpdatesView,
     UnsubscribeView,
 )

@@ -245,7 +245,7 @@ class ForumThreadReplyCreateView(LoginRequiredMixin, FormView, DetailView):
         initial = {}
         if quote:
             quote_reply = ForumReply.objects.get(id=int(quote))
-            initial["content"] = "\"%s\"" % quote_reply.content
+            initial["content"] = "\'%s\'" % quote_reply.content
         return initial
 
 
