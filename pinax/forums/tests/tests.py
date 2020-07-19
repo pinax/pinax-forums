@@ -11,7 +11,7 @@ class ForumCategoryTests(TestCase):
 
     def test_get_absolute_url(self):
         cat = ForumCategory.objects.create(title="Software")
-        self.assertEquals(cat.get_absolute_url(), "/category/1/")
+        self.assertEquals(cat.get_absolute_url(), "/categories/1/")
 
     def test_forums_ordered_properly(self):
         cat = ForumCategory.objects.create(title="Software")

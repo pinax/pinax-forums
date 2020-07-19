@@ -1,8 +1,0 @@
-[run]
-source = pinax
-omit = pinax/forums/conf.py,pinax/forums/tests/*,pinax/forums/migrations/*
-branch = true
-
-[report]
-omit = pinax/forums/conf.py,pinax/forums/tests/*,pinax/forums/migrations/*
-show_missing = True

@@ -3,11 +3,11 @@ from django import forms
 from .models import ForumReply, ForumThread
 
 
-class PostForm(object):
+class PostForm:
 
     def __init__(self, *args, **kwargs):
         no_subscribe = kwargs.pop("no_subscribe", False)
-        super(PostForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if no_subscribe:
             del self.fields["subscribe"]
 
